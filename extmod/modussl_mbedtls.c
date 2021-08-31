@@ -193,7 +193,15 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         goto cleanup;
     }
 
-    mbedtls_ssl_conf_authmode(&o->conf, MBEDTLS_SSL_VERIFY_OPTIONAL);
+    int auth_mode = MBEDTLS_SSL_VERIFY_NONE;
+    if (args->cert_reqs.u_obj != mp_const_none) {
+        auth_mode = mp_obj_get_int(args->cert_reqs.u_obj);
+        if (auth_mode > MBEDTLS_SSL_VERIFY_UNSET) {
+            // Accept only good values
+            auth_mode = MBEDTLS_SSL_VERIFY_NONE;
+        }
+    }
+    mbedtls_ssl_conf_authmode(&o->conf, auth_mode);
     mbedtls_ssl_conf_rng(&o->conf, mbedtls_ctr_drbg_random, &o->ctr_drbg);
     #ifdef MBEDTLS_DEBUG_C
     mbedtls_ssl_conf_dbg(&o->conf, mbedtls_debug, NULL);
@@ -434,6 +442,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socke
 STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ussl) },
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
+    // class Constants
+    { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(MBEDTLS_SSL_VERIFY_NONE)},
+    { MP_ROM_QSTR(MP_QSTR_CERT_OPTIONAL), MP_ROM_INT(MBEDTLS_SSL_VERIFY_OPTIONAL)},
+    { MP_ROM_QSTR(MP_QSTR_CERT_REQUIRED), MP_ROM_INT(MBEDTLS_SSL_VERIFY_REQUIRED)},
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);
