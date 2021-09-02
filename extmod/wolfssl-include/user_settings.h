@@ -1,6 +1,6 @@
 #pragma once
 
-//Target 21k build
+//Target 21k build -> from https://www.wolfssl.com/forums/topic697-building-leanpsk-in-a-nonstandard-environment.html
 #define WOLFSSL_LEANPSK
 #define HAVE_NULL_CIPHER
 #define SINGLE_THREADED
@@ -27,4 +27,16 @@
 #define BUILD_SLOWMATH
 #define SINGLE_THREADED
 
+// TLS1.3 and additional options
+#define HAVE_TLS_EXTENSIONS
+#define WOLFSSL_TLS13
+#define HAVE_SUPPORTED_CURVES
+#define WOLFSSL_NO_TLS12
 #define NO_OLD_SSL_NAMES
+#define HAVE_ECC
+#define HAVE_HKDF
+#define WOLFSSL_SMALL_STACK
+#define WOLFSSL_CERT_GEN
+#define NO_WOLFSSL_SERVER
+#define WC_NO_HARDEN // TODO CHECK for Timing resistance
+

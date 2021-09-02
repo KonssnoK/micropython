@@ -145,7 +145,6 @@ else ifeq ($(MICROPY_SSL_WOLFSSL),1)
 WOLFSSL_DIR = lib/wolfssl
 CFLAGS_MOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_USER_SETTINGS -I$(TOP)/$(WOLFSSL_DIR) -I$(TOP)/extmod/wolfssl-include
 SRC_MOD += $(addprefix $(WOLFSSL_DIR)/src/,\
-	bio.c \
 	crl.c \
 	internal.c \
 	keys.c \
