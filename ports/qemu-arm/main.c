@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     mp_stack_set_limit(10240);
     uint32_t heap[16 * 1024 / 4];
     gc_init(heap, (char *)heap + 16 * 1024);
-    mp_init();
+    mp_init_env();
     do_str("print('hello world!')", MP_PARSE_SINGLE_INPUT);
     mp_deinit();
     return 0;

@@ -568,7 +568,7 @@
 #endif
 
 // Whether to enable a separate allocator for the Python stack.
-// If enabled then the code must call mp_pystack_init before mp_init.
+// If enabled then the code must call mp_pystack_init before mp_init_env.
 #ifndef MICROPY_ENABLE_PYSTACK
 #define MICROPY_ENABLE_PYSTACK (0)
 #endif

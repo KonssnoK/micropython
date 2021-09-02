@@ -90,7 +90,7 @@ void mp_js_init(int heap_size) {
     mp_pystack_init(pystack, &pystack[MP_ARRAY_SIZE(pystack)]);
     #endif
 
-    mp_init();
+    mp_init_env();
 
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));

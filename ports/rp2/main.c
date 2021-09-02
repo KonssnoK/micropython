@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
     for (;;) {
 
         // Initialise MicroPython runtime.
-        mp_init();
+        mp_init_env();
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR__slash_lib));

@@ -189,7 +189,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     char *heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
 
-    mp_init();
+    mp_init_env();
     #ifdef _WIN32
     set_fmode_binary();
     #endif

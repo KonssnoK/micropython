@@ -92,7 +92,7 @@ void upytest_execute_test(const char *src) {
     // To provide clean room for each test, interpreter and heap are
     // reinitialized before running each.
     gc_init(heap_start, heap_end);
-    mp_init();
+    mp_init_env();
     mp_obj_list_init(mp_sys_path, 0);
     mp_obj_list_init(mp_sys_argv, 0);
 
