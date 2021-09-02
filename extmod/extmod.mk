@@ -143,7 +143,7 @@ SRC_MOD += $(addprefix $(MBEDTLS_DIR)/library/,\
 	)
 else ifeq ($(MICROPY_SSL_WOLFSSL),1)
 WOLFSSL_DIR = lib/wolfssl
-CFLAGS_MOD += -DMICROPY_SSL_WOLFSSL=1 -I$(TOP)/$(WOLFSSL_DIR)/wolfssl
+CFLAGS_MOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_USER_SETTINGS -I$(TOP)/$(WOLFSSL_DIR)/wolfssl
 SRC_MOD += $(addprefix $(WOLFSSL_DIR)/src/,\
 	bio.c \
 	crl.c \
