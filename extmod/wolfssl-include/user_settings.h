@@ -4,7 +4,7 @@
 #define WOLFSSL_LEANPSK
 #define HAVE_NULL_CIPHER
 #define SINGLE_THREADED
-#define NO_AES
+//#define NO_AES
 #define NO_FILESYSTEM
 #define NO_RABBIT
 #define NO_RSA
@@ -22,7 +22,7 @@
 #define NO_SESSION_CACHE
 #define NO_DEV_RANDOM
 #define WOLFSSL_USER_IO
-#define NO_SHA
+//#define NO_SHA
 #define USE_SLOW_SHA
 #define BUILD_SLOWMATH
 #define SINGLE_THREADED

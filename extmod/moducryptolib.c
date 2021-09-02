@@ -252,9 +252,9 @@ STATIC void aes_final_set_key_impl(AES_CTX_IMPL* ctx, bool encrypt)
     // setkey call will succeed, we've already checked the keysize earlier.
     assert(16 == keysize || 32 == keysize);
     if (encrypt) {
-        wc_AesSetKey(ctx, key, keysize, iv, AES_ENCRYPTION);
+        wc_AesSetKey(&ctx->u.wolfssl_ctx, key, keysize, iv, AES_ENCRYPTION);
     } else {
-        wc_AesSetKey(ctx, key, keysize, iv, AES_DECRYPTION);
+        wc_AesSetKey(&ctx->u.wolfssl_ctx, key, keysize, iv, AES_DECRYPTION);
     }
 }
 
@@ -262,9 +262,9 @@ STATIC void aes_process_ecb_impl(AES_CTX_IMPL* ctx, const uint8_t in[16], uint8_
 {
 #ifdef WOLFSSL_AES_DIRECT 
     if (encrypt) {
-        wc_AesEncryptDirect(ctx, out, in);
+        wc_AesEncryptDirect(&ctx->u.wolfssl_ctx, out, in);
     } else {
-        wc_AesDecryptDirect(ctx, out, in);
+        wc_AesDecryptDirect(&ctx->u.wolfssl_ctx, out, in);
     }
 #endif
 }
@@ -272,9 +272,9 @@ STATIC void aes_process_ecb_impl(AES_CTX_IMPL* ctx, const uint8_t in[16], uint8_
 STATIC void aes_process_cbc_impl(AES_CTX_IMPL* ctx, const uint8_t* in, uint8_t* out, size_t in_len, bool encrypt)
 {
     if (encrypt) {
-        wc_AesCbcEncrypt(ctx, out, in, in_len);
+        wc_AesCbcEncrypt(&ctx->u.wolfssl_ctx, out, in, in_len);
     } else {
-        wc_AesCbcDecrypt(ctx, out, in, in_len);
+        wc_AesCbcDecrypt(&ctx->u.wolfssl_ctx, out, in, in_len);
     }
 }
 
@@ -293,7 +293,9 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
     const mp_int_t block_mode = mp_obj_get_int(args[1]);
 
     switch (block_mode) {
+#if !defined(MICROPY_SSL_WOLFSSL) || defined(WOLFSSL_AES_DIRECT)
         case UCRYPTOLIB_MODE_ECB:
+#endif
         case UCRYPTOLIB_MODE_CBC:
         #if MICROPY_PY_UCRYPTOLIB_CTR
         case UCRYPTOLIB_MODE_CTR:
