@@ -144,6 +144,7 @@ SRC_MOD += $(addprefix $(MBEDTLS_DIR)/library/,\
 else ifeq ($(MICROPY_SSL_WOLFSSL),1)
 WOLFSSL_DIR = lib/wolfssl
 CFLAGS_MOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_USER_SETTINGS -I$(TOP)/$(WOLFSSL_DIR) -I$(TOP)/extmod/wolfssl-include
+$(BUILD)/$(WOLFSSL_DIR)/%.o: CFLAGS += -Wno-unused-function
 SRC_MOD += $(addprefix $(WOLFSSL_DIR)/src/,\
 	crl.c \
 	internal.c \
@@ -154,6 +155,11 @@ SRC_MOD += $(addprefix $(WOLFSSL_DIR)/src/,\
 	tls.c \
 	tls13.c \
 	wolfio.c \
+	)
+SRC_MOD += $(addprefix $(WOLFSSL_DIR)/wolfcrypt/src/,\
+	aes.c \
+	sha.c \
+	sha256.c \
 	)
 endif
 endif

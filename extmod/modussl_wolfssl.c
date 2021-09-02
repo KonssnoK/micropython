@@ -368,7 +368,7 @@ STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     // class Constants
     { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(WOLFSSL_VERIFY_NONE)},
     { MP_ROM_QSTR(MP_QSTR_CERT_OPTIONAL), MP_ROM_INT(WOLFSSL_VERIFY_PEER)},
-    { MP_ROM_QSTR(MP_QSTR_CERT_REQUIRED), MP_ROM_INT(WOLFSSL_VERIFY_PEER)},
+    { MP_ROM_QSTR(MP_QSTR_CERT_REQUIRED), MP_ROM_INT(WOLFSSL_VERIFY_PEER)}
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_ssl_globals, mp_module_ssl_globals_table);

@@ -10,7 +10,7 @@
 #define NO_RSA
 #define NO_DSA
 #define NO_DH
-#define NO_CERTS
+//#define NO_CERTS
 #define NO_PWDBASED
 #define NO_DES3
 #define NO_MD4
@@ -39,4 +39,4 @@
 #define WOLFSSL_CERT_GEN
 #define NO_WOLFSSL_SERVER
 #define WC_NO_HARDEN // TODO CHECK for Timing resistance
-
+#define NO_ASN_TIME //or USER_TICKS
