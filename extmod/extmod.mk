@@ -141,6 +141,21 @@ SRC_MOD += $(addprefix $(MBEDTLS_DIR)/library/,\
 	x509write_csr.c \
 	xtea.c \
 	)
+else ifeq ($(MICROPY_SSL_WOLFSSL),1)
+WOLFSSL_DIR = lib/wolfssl
+CFLAGS_MOD += -DMICROPY_SSL_WOLFSSL=1 -I$(TOP)/$(WOLFSSL_DIR)/wolfssl
+SRC_MOD += $(addprefix $(WOLFSSL_DIR)/src/,\
+	bio.c \
+	crl.c \
+	internal.c \
+	keys.c \
+	ocsp.c \
+	sniffer.c \
+	ssl.c \
+	tls.c \
+	tls13.c \
+	wolfio.c \
+	)
 endif
 endif
 

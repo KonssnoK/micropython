@@ -56,6 +56,12 @@
 #include "mbedtls/sha1.h"
 #endif
 
+#if MICROPY_SSL_WOLFSSL
+
+#error TODO
+
+#endif // MICROPY_SSL_WOLFSSL
+
 #endif
 
 typedef struct _mp_obj_hash_t {
@@ -245,6 +251,12 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
 }
 #endif
 
+#if MICROPY_SSL_WOLFSSL
+
+#error TODO
+
+#endif // MICROPY_SSL_WOLFSSL
+
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_sha1_update_obj, uhashlib_sha1_update);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_sha1_digest_obj, uhashlib_sha1_digest);
 
@@ -339,6 +351,12 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
 #endif // MICROPY_SSL_MBEDTLS
+
+#if MICROPY_SSL_WOLFSSL
+
+#error TODO
+
+#endif // MICROPY_SSL_WOLFSSL
 
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(uhashlib_md5_update_obj, uhashlib_md5_update);
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(uhashlib_md5_digest_obj, uhashlib_md5_digest);
