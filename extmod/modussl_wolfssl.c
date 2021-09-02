@@ -37,7 +37,6 @@
 #include "py/objstr.h"
 
 //
-#include "wolfssl-include/config.h"
 #include "wolfssl/ssl.h"
 #include "wolfssl/internal.h"
 
