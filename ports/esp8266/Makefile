@@ -23,7 +23,7 @@ QSTR_GLOBAL_DEPENDENCIES = $(BOARD_DIR)/mpconfigboard.h
 MICROPY_ROM_TEXT_COMPRESSION ?= 1
 MICROPY_PY_USSL = 1
 MICROPY_SSL_WOLFSSL = 1
-AXTLS_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
+# WOLFSSL_DEFS_EXTRA = -Dabort=abort_ -DRT_MAX_PLAIN_LENGTH=1024 -DRT_EXTRA=4096
 BTREE_DEFS_EXTRA = -DDEFPSIZE=1024 -DMINCACHE=3
 
 FROZEN_MANIFEST ?= boards/manifest.py
@@ -33,7 +33,7 @@ FROZEN_MPY_DIR ?=
 # include py core make definitions
 include $(TOP)/py/py.mk
 
-GIT_SUBMODULES = lib/axtls lib/berkeley-db-1.xx
+GIT_SUBMODULES = lib/wolfssl lib/berkeley-db-1.xx
 
 FWBIN = $(BUILD)/firmware-combined.bin
 PORT ?= /dev/ttyACM0
