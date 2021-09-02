@@ -57,7 +57,7 @@ static void do_str(const char *src, mp_parse_input_kind_t input_kind) {
 
 // Main entry point: initialise the runtime and execute demo strings.
 void bare_main(void) {
-    mp_init();
+    mp_init_env();
     do_str(demo_single_input, MP_PARSE_SINGLE_INPUT);
     do_str(demo_file_input, MP_PARSE_FILE_INPUT);
     mp_deinit();

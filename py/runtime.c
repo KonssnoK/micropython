@@ -58,7 +58,7 @@ const mp_obj_module_t mp_module___main__ = {
     .globals = (mp_obj_dict_t *)&MP_STATE_VM(dict_main),
 };
 
-void mp_init(void) {
+void mp_init_env(void) {
     qstr_init();
 
     // no pending exceptions to start with

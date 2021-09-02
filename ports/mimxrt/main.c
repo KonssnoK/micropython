@@ -53,7 +53,7 @@ int main(void) {
 
     for (;;) {
         gc_init(&_gc_heap_start, &_gc_heap_end);
-        mp_init();
+        mp_init_env();
 
         mp_obj_list_init(MP_OBJ_TO_PTR(mp_sys_path), 0);
         mp_obj_list_append(mp_sys_path, MP_OBJ_NEW_QSTR(MP_QSTR_));

@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     #if MICROPY_ENABLE_GC
     gc_init(heap, heap + sizeof(heap));
     #endif
-    mp_init();
+    mp_init_env();
     #if MICROPY_ENABLE_COMPILER
     #if MICROPY_REPL_EVENT_DRIVEN
     pyexec_event_repl_init();

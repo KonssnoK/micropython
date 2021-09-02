@@ -471,7 +471,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_pystack_init(pystack, &pystack[MP_ARRAY_SIZE(pystack)]);
     #endif
 
-    mp_init();
+    mp_init_env();
 
     #if MICROPY_EMIT_NATIVE
     // Set default emitter options

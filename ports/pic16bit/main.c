@@ -70,7 +70,7 @@ soft_reset:
     int stack_dummy;
     MP_STATE_THREAD(stack_top) = (char *)&stack_dummy;
     gc_init(heap, heap + sizeof(heap));
-    mp_init();
+    mp_init_env();
     mp_hal_init();
     readline_init0();
 

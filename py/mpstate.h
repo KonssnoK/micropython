@@ -154,7 +154,7 @@ typedef struct _mp_state_vm_t {
     // dictionary for the __main__ module
     mp_obj_dict_t dict_main;
 
-    // these two lists must be initialised per port, after the call to mp_init
+    // these two lists must be initialised per port, after the call to mp_init_env
     mp_obj_list_t mp_sys_path_obj;
     mp_obj_list_t mp_sys_argv_obj;
 
