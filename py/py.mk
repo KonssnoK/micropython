@@ -194,6 +194,7 @@ PY_EXTMOD_O_BASENAME = \
 	extmod/modbluetooth.o \
 	extmod/modussl_axtls.o \
 	extmod/modussl_mbedtls.o \
+	extmod/modussl_wolfssl.o \
 	extmod/modurandom.o \
 	extmod/moduselect.o \
 	extmod/moduwebsocket.o \
