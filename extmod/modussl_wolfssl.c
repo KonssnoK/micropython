@@ -107,13 +107,14 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
     #endif
 }
 
-STATIC int _wolfssl_ssl_send(void *ctx, const byte *buf, size_t len) {
+STATIC int _wolfssl_ssl_send(WOLFSSL* ssl, char* buf, int sz, void* ctx)
+{
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
     const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
 
-    mp_uint_t out_sz = sock_stream->write(sock, buf, len, &err);
+    mp_uint_t out_sz = sock_stream->write(sock, buf, sz, &err);
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(err)) {
             return WOLFSSL_CBIO_ERR_WANT_WRITE;
@@ -125,13 +126,14 @@ STATIC int _wolfssl_ssl_send(void *ctx, const byte *buf, size_t len) {
 }
 
 // _mbedtls_ssl_recv is called by mbedtls to receive bytes from the underlying socket
-STATIC int _wolfssl_ssl_recv(void *ctx, byte *buf, size_t len) {
+STATIC int _wolfssl_ssl_recv(WOLFSSL* ssl, char* buf, int sz, void* ctx)
+{
     mp_obj_t sock = *(mp_obj_t *)ctx;
 
     const mp_stream_p_t *sock_stream = mp_get_stream(sock);
     int err;
 
-    mp_uint_t out_sz = sock_stream->read(sock, buf, len, &err);
+    mp_uint_t out_sz = sock_stream->read(sock, buf, sz, &err);
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(err)) {
             return WOLFSSL_CBIO_ERR_WANT_READ;
@@ -222,7 +224,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     wolfSSL_SetIOWriteCtx(o->ssl_sock, o->ssl_ctx);
 
     // This function assigns a file descriptor (fd) as the input/output facility for the SSL connection.
-    wolfSSL_set_fd(o->ssl_sock, o->sock);
+    wolfSSL_set_fd(o->ssl_sock, (int)o->sock);
 
     err = 0; /* reset error */
     ret = wolfSSL_connect(o->ssl_sock);
@@ -249,7 +251,7 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
-    int ret = wolfSSL_read(&o->ssl_sock, buf, size);
+    int ret = wolfSSL_read(o->ssl_sock, buf, size);
     if (ret == WOLFSSL_CBIO_ERR_CONN_CLOSE) {
         // end of stream
         return 0;
@@ -272,7 +274,7 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
 STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
-    int ret = wolfSSL_write(&o->ssl_sock, buf, size);
+    int ret = wolfSSL_write(o->ssl_sock, buf, size);
     if (ret >= 0) {
         return ret;
     }
