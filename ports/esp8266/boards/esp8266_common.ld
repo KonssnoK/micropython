@@ -130,7 +130,8 @@ SECTIONS
         *extmod/*.o*(.literal* .text*)
 
         *lib/oofatfs/*.o*(.literal*, .text*)
-        *lib/axtls/*.o(.literal*, .text*)
+        *lib/wolfssl/src/*.o(.literal*, .text*)
+		*lib/wolfssl/wolfcrypt/src/*.o(.literal*, .text*)
         *lib/berkeley-db-1.xx/*.o(.literal*, .text*)
         *lib/libm/*.o*(.literal*, .text*)
         *lib/littlefs/*.o*(.literal*, .text*)
