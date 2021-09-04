@@ -160,6 +160,14 @@ SRC_MOD += $(addprefix $(WOLFSSL_DIR)/wolfcrypt/src/,\
 	aes.c \
 	sha.c \
 	sha256.c \
+	asn.c \
+	ecc.c \
+	integer.c \
+	wc_port.c \
+	hmac.c \
+	hash.c \
+	random.c \
+	wolfmath.c \
 	)
 endif
 endif

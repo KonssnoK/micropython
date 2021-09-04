@@ -59,6 +59,16 @@ struct ssl_args {
 
 STATIC const mp_obj_type_t ussl_socket_type;
 
+char toLower(char chr)
+{
+    return (chr >= 'A' && chr <= 'Z') ? (chr + 32) : (chr);
+};
+char toUpper(char chr)
+{
+    return (chr >= 'a' && chr <= 'z') ? (chr - 32) : (chr);
+};
+
+
 #ifdef MBEDTLS_DEBUG_C
 STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, const char *str) {
     (void)ctx;
@@ -217,7 +227,7 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     o->ssl_sock = wolfSSL_new(o->ssl_ctx);
 
     // Set blocking socket
-    wolfSSL_set_using_nonblock(o->ssl_sock, 0);
+    //wolfSSL_set_using_nonblock(o->ssl_sock, 0);
 
     // This function registers a context for the SSL session's receive callback function.
     wolfSSL_SetIOReadCtx(o->ssl_sock, o->ssl_ctx);

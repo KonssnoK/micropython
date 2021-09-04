@@ -40,3 +40,13 @@
 #define NO_WOLFSSL_SERVER
 #define WC_NO_HARDEN // TODO CHECK for Timing resistance
 #define NO_ASN_TIME //or USER_TICKS
+#define WOLFSSL_NO_PEM
+#define CUSTOM_RAND_GENERATE system_get_time
+extern int system_get_time();
+
+#define CTYPE_USER
+#define XTOLOWER toLower
+#define XTOUPPER toUpper
+char toLower(char chr);
+char toUpper(char chr);
+
