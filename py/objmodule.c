@@ -212,6 +212,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
     #if MICROPY_PY_USSL
     { MP_ROM_QSTR(MP_QSTR_ussl), MP_ROM_PTR(&mp_module_ussl) },
     #endif
+	#if MICROPY_PY_USSL && MICROPY_SSL_WOLFSSL
+    { MP_ROM_QSTR(MP_QSTR_usslcert), MP_ROM_PTR(&mp_module_usslcert) },
+    #endif
     #if MICROPY_PY_LWIP
     { MP_ROM_QSTR(MP_QSTR_lwip), MP_ROM_PTR(&mp_module_lwip) },
     #endif
