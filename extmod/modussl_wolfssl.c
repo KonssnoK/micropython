@@ -402,7 +402,7 @@ STATIC mp_obj_t mod_ssl_set_ca_public_key(mp_obj_t ssl_obj, mp_obj_t pub_key)
         if (!sig)
             continue;
 
-        memcpy(sig->publicKey, key_data, sig->pubKeySize);
+        memcpy((void*)sig->publicKey, key_data, sig->pubKeySize);
     }
 
     return mp_const_none;

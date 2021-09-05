@@ -39,6 +39,7 @@
 #include "wolfssl/ssl.h"
 #include "wolfssl/internal.h"
 #include "wolfssl/wolfcrypt/types.h"
+#include "wolfssl/wolfcrypt/rsa.h"
 
 typedef struct _mp_obj_ssl_certificate_t {
     mp_obj_base_t base;
@@ -56,7 +57,7 @@ STATIC mp_obj_t usslcert_certificate_new(const mp_obj_type_t* type, size_t n_arg
     (void)n_kw;
     (void)all_args;
 
-    mp_obj_ssl_certificate_t* o = m_new_obj(mp_obj_ssl_socket_t);
+    mp_obj_ssl_certificate_t* o = m_new_obj(mp_obj_ssl_certificate_t);
 
     o->base.type = &usslcert_certificate_type;
 
@@ -70,7 +71,7 @@ STATIC mp_obj_t usslcert_certificate_subject_country(size_t n_args, const mp_obj
     if (n_args == 2) {
         // 
         size_t len;
-        const byte* data = (const byte*)mp_obj_str_get_data(args[1], &len);
+        const char* data = (const char*)mp_obj_str_get_data(args[1], &len);
         memset(self->ssCert.subject.country, 0, CTC_NAME_SIZE);
         strncpy(self->ssCert.subject.country, data, len);
     }
@@ -86,7 +87,7 @@ STATIC mp_obj_t usslcert_certificate_subject_state(size_t n_args, const mp_obj_t
     if (n_args == 2) {
         // 
         size_t len;
-        const byte* data = (const byte*)mp_obj_str_get_data(args[1], &len);
+        const char* data = (const char*)mp_obj_str_get_data(args[1], &len);
         memset(self->ssCert.subject.state, 0, CTC_NAME_SIZE);
         strncpy(self->ssCert.subject.state, data, len);
     }
@@ -102,7 +103,7 @@ STATIC mp_obj_t usslcert_certificate_subject_locality(size_t n_args, const mp_ob
     if (n_args == 2) {
         // 
         size_t len;
-        const byte* data = (const byte*)mp_obj_str_get_data(args[1], &len);
+        const char* data = (const char*)mp_obj_str_get_data(args[1], &len);
         memset(self->ssCert.subject.locality, 0, CTC_NAME_SIZE);
         strncpy(self->ssCert.subject.locality, data, len);
     }
@@ -118,7 +119,7 @@ STATIC mp_obj_t usslcert_certificate_subject_org(size_t n_args, const mp_obj_t* 
     if (n_args == 2) {
         // 
         size_t len;
-        const byte* data = (const byte*)mp_obj_str_get_data(args[1], &len);
+        const char* data = (const char*)mp_obj_str_get_data(args[1], &len);
         memset(self->ssCert.subject.org, 0, CTC_NAME_SIZE);
         strncpy(self->ssCert.subject.org, data, len);
     }
@@ -134,7 +135,7 @@ STATIC mp_obj_t usslcert_certificate_subject_commonName(size_t n_args, const mp_
     if (n_args == 2) {
         // 
         size_t len;
-        const byte* data = (const byte*)mp_obj_str_get_data(args[1], &len);
+        const char* data = (const char*)mp_obj_str_get_data(args[1], &len);
         memset(self->ssCert.subject.commonName, 0, CTC_NAME_SIZE);
         strncpy(self->ssCert.subject.commonName, data, len);
     }
