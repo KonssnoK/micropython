@@ -57,7 +57,7 @@ STATIC mp_obj_t usslcert_certificate_new(const mp_obj_type_t* type, size_t n_arg
     (void)all_args;
 
     mp_obj_ssl_certificate_t* o = m_new_obj(mp_obj_ssl_socket_t);
-#endif
+
     o->base.type = &usslcert_certificate_type;
 
     return o;
