@@ -3,8 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2016 Linaro Ltd.
- * Copyright (c) 2019 Paul Sokolovsky
+ * Copyright (c) 2021 Lorenzo Consolaro
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -152,7 +151,6 @@ STATIC int ssl_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* store)
 }
 
 STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
-    int err;
 
     // Verify the socket object has the full stream protocol
     mp_get_stream_raise(sock, MP_STREAM_OP_READ | MP_STREAM_OP_WRITE | MP_STREAM_OP_IOCTL);
@@ -164,8 +162,6 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     #endif
     o->base.type = &ussl_socket_type;
     o->sock = sock;
-
-    int ret;
 
     if ((o->ssl_ctx = wolfSSL_CTX_new(wolfTLS_client_method())) == NULL) {
         mp_raise_OSError(MP_EINVAL);
@@ -199,7 +195,6 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
         }
     }
 
-
     int auth_mode = WOLFSSL_VERIFY_NONE;
     if (args->cert_reqs.u_obj != mp_const_none) {
         auth_mode = mp_obj_get_int(args->cert_reqs.u_obj);
@@ -214,31 +209,9 @@ STATIC mp_obj_ssl_socket_t *socket_new(mp_obj_t sock, struct ssl_args *args) {
     wolfSSL_CTX_SetIORecv(o->ssl_ctx, _wolfssl_ssl_recv);
     wolfSSL_CTX_SetIOSend(o->ssl_ctx, _wolfssl_ssl_send);
 
-    o->ssl_sock = wolfSSL_new(o->ssl_ctx);
 
-    // Set blocking socket
-    wolfSSL_set_using_nonblock(o->ssl_sock, 0);
-
-    // This function registers a context for the SSL session's receive callback function.
-    wolfSSL_SetIOReadCtx(o->ssl_sock, o->ssl_ctx);
-    wolfSSL_SetIOWriteCtx(o->ssl_sock, o->ssl_ctx);
-
-    // This function assigns a file descriptor (fd) as the input/output facility for the SSL connection.
-    wolfSSL_set_fd(o->ssl_sock, (int)o->sock);
-
-    err = 0; /* reset error */
-    ret = wolfSSL_connect(o->ssl_sock);
-    if (ret != WOLFSSL_SUCCESS) {
-        err = wolfSSL_get_error(o->ssl_sock, 0);
-    }
-
-    if (ret != WOLFSSL_SUCCESS) {
-        wolfSSL_free(o->ssl_sock);
-        wolfSSL_CTX_free(o->ssl_ctx);
-    } else {
-        mbedtls_raise_error(err);
-    }
-
+    // TODO -> I think that when we raise an exception resources are not released 
+    //wolfSSL_CTX_free(o->ssl_ctx);
     return o;
 }
 
@@ -364,9 +337,75 @@ STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_KW(mod_ssl_wrap_socket_obj, 1, mod_ssl_wrap_socket);
 
+STATIC mp_obj_t mod_ssl_connect(mp_obj_t ssl_obj)
+{
+    mp_obj_ssl_socket_t* o = MP_OBJ_TO_PTR(ssl_obj);
+    int err;
+    int ret;
+
+    o->ssl_sock = wolfSSL_new(o->ssl_ctx);
+
+    // Set blocking socket
+    //wolfSSL_set_using_nonblock(o->ssl_sock, 0);
+
+    // This function registers a context for the SSL session's receive callback function.
+    wolfSSL_SetIOReadCtx(o->ssl_sock, o->ssl_ctx);
+    wolfSSL_SetIOWriteCtx(o->ssl_sock, o->ssl_ctx);
+
+    // This function assigns a file descriptor (fd) as the input/output facility for the SSL connection.
+    wolfSSL_set_fd(o->ssl_sock, (int)o->sock);
+
+    err = 0; /* reset error */
+    ret = wolfSSL_connect(o->ssl_sock);
+    if (ret != WOLFSSL_SUCCESS) {
+        err = wolfSSL_get_error(o->ssl_sock, 0);
+
+        wolfSSL_free(o->ssl_sock);
+        mbedtls_raise_error(err);
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ssl_connect_obj, mod_ssl_connect);
+
+STATIC mp_obj_t mod_ssl_close(mp_obj_t ssl_obj)
+{
+    mp_obj_ssl_socket_t* o = MP_OBJ_TO_PTR(ssl_obj);
+
+    if (o->ssl_sock) {
+        wolfSSL_free(o->ssl_sock);
+        o->ssl_sock = NULL;
+    }
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ssl_close_obj, mod_ssl_close);
+
+STATIC mp_obj_t mod_ssl_set_ca_public_key(mp_obj_t ssl_obj, mp_obj_t pub_key)
+{
+    mp_obj_ssl_socket_t* o = MP_OBJ_TO_PTR(ssl_obj);
+    size_t key_len;
+    const byte* key_data = (const byte*)mp_obj_str_get_data(pub_key, &key_len);
+    Signer* sig;
+    int i;
+    
+    for (i = 0; i < CA_TABLE_SIZE; ++i) {
+        sig = o->ssl_ctx->cm->caTable[i];
+        if (!sig)
+            continue;
+
+        memcpy((void*)sig->publicKey, key_data, sig->pubKeySize);
+    }
+
+    return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_ssl_set_ca_public_key_obj, mod_ssl_set_ca_public_key);
+
 STATIC const mp_rom_map_elem_t mp_module_ssl_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_ussl) },
+
     { MP_ROM_QSTR(MP_QSTR_wrap_socket), MP_ROM_PTR(&mod_ssl_wrap_socket_obj) },
+    { MP_ROM_QSTR(MP_QSTR_connect), MP_ROM_PTR(&mod_ssl_connect_obj) },
+    { MP_ROM_QSTR(MP_QSTR_close), MP_ROM_PTR(&mod_ssl_close_obj) },
+    { MP_ROM_QSTR(MP_QSTR_set_ca_public_key), MP_ROM_PTR(&mod_ssl_set_ca_public_key_obj) },
     // class Constants
     { MP_ROM_QSTR(MP_QSTR_CERT_NONE), MP_ROM_INT(WOLFSSL_VERIFY_NONE)},
     { MP_ROM_QSTR(MP_QSTR_CERT_OPTIONAL), MP_ROM_INT(WOLFSSL_VERIFY_PEER)},

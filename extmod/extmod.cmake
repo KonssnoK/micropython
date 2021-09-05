@@ -28,6 +28,8 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/moduselect.c
     ${MICROPY_EXTMOD_DIR}/modussl_axtls.c
     ${MICROPY_EXTMOD_DIR}/modussl_mbedtls.c
+    ${MICROPY_EXTMOD_DIR}/modussl_wolfssl.c
+    ${MICROPY_EXTMOD_DIR}/modussl_wolfssl_cert.c
     ${MICROPY_EXTMOD_DIR}/modutimeq.c
     ${MICROPY_EXTMOD_DIR}/moduwebsocket.c
     ${MICROPY_EXTMOD_DIR}/moduzlib.c
