@@ -246,13 +246,13 @@ STATIC mp_obj_t usslcert_cert_init(mp_obj_t cert)
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(usslcert_cert_init_obj, usslcert_cert_init);
 
-STATIC mp_obj_t usslcert_cert_selfsign(mp_obj_t cert, mp_obj_t public_key)
+STATIC mp_obj_t usslcert_cert_selfsign(mp_obj_t cert, mp_obj_t private_key)
 {
 #define TWOK_BUF 0x800
     mp_obj_ssl_certificate_t* self = MP_OBJ_TO_PTR(cert);
     int ret;
     size_t key_len;
-    const byte* key_data = (const byte*)mp_obj_str_get_data(public_key, &key_len);
+    const byte* key_data = (const byte*)mp_obj_str_get_data(private_key, &key_len);
     uint32_t idx;
     byte* derCert = m_new(byte, TWOK_BUF);
     int derCertSz;
