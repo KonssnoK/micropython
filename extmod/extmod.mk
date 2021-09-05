@@ -166,6 +166,7 @@ SRC_MOD += $(addprefix $(WOLFSSL_DIR)/wolfcrypt/src/,\
 	random.c \
 	wolfmath.c \
 	coding.c \
+	rsa.c \
 	)
 endif
 endif

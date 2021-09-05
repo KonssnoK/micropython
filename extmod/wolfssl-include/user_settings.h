@@ -7,7 +7,7 @@
 //#define NO_AES
 #define NO_FILESYSTEM
 #define NO_RABBIT
-#define NO_RSA
+//#define NO_RSA
 #define NO_DSA
 #define NO_DH
 //#define NO_CERTS
@@ -28,6 +28,7 @@
 #define SINGLE_THREADED
 
 // TLS1.3 and additional options
+#define WC_RSA_PSS
 #define HAVE_TLS_EXTENSIONS
 #define WOLFSSL_TLS13
 #define HAVE_SUPPORTED_CURVES
