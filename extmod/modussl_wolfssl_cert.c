@@ -301,7 +301,7 @@ STATIC mp_obj_t usslcert_cert_selfsign(mp_obj_t cert, mp_obj_t public_key)
 
     return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(usslcert_cert_selfsign_obj, usslcert_cert_selfsign);
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(usslcert_cert_selfsign_obj, usslcert_cert_selfsign);
 
 
 STATIC const mp_rom_map_elem_t mp_module_usslcert_globals_table[] = {
