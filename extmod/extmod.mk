@@ -146,11 +146,8 @@ WOLFSSL_DIR = lib/wolfssl
 CFLAGS_MOD += -DMICROPY_SSL_WOLFSSL=1 -DWOLFSSL_USER_SETTINGS -I$(TOP)/$(WOLFSSL_DIR) -I$(TOP)/extmod/wolfssl-include
 $(BUILD)/$(WOLFSSL_DIR)/%.o: CFLAGS += -Wno-unused-function
 SRC_MOD += $(addprefix $(WOLFSSL_DIR)/src/,\
-	crl.c \
 	internal.c \
 	keys.c \
-	ocsp.c \
-	sniffer.c \
 	ssl.c \
 	tls.c \
 	tls13.c \
