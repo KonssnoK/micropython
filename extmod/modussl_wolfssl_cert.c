@@ -253,7 +253,7 @@ STATIC mp_obj_t usslcert_cert_selfsign(mp_obj_t cert, mp_obj_t private_key)
     int ret;
     size_t key_len;
     const byte* key_data = (const byte*)mp_obj_str_get_data(private_key, &key_len);
-    uint32_t idx;
+    uint32_t idx = 0;
     byte* derCert = m_new(byte, TWOK_BUF);
     int derCertSz;
 
@@ -271,7 +271,7 @@ STATIC mp_obj_t usslcert_cert_selfsign(mp_obj_t cert, mp_obj_t private_key)
         key_len
     );
     if (ret) {
-        mp_raise_ValueError(MP_ERROR_TEXT("cannot decode key"));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("Key err %d"), ret);
     }
 
     // Initialize random generator
@@ -292,7 +292,7 @@ STATIC mp_obj_t usslcert_cert_selfsign(mp_obj_t cert, mp_obj_t private_key)
     wc_FreeRng(&self->rng);
 
     if (derCertSz < 0) {
-        mp_raise_ValueError(MP_ERROR_TEXT("cannot selfsign certificate"));
+        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("cannot selfsign cert %d"), derCertSz);
     } else {
         m_renew(byte, derCert, TWOK_BUF, derCertSz);
 

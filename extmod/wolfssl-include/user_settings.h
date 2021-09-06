@@ -40,7 +40,6 @@
 #define WOLFSSL_CERT_GEN
 #define NO_WOLFSSL_SERVER
 #define WC_NO_HARDEN // TODO CHECK for Timing resistance
-#define NO_ASN_TIME //or USER_TICKS
 #define WOLFSSL_NO_PEM
 #define CUSTOM_RAND_GENERATE system_get_time
 extern int system_get_time();
@@ -51,3 +50,9 @@ extern int system_get_time();
 char toLower(char chr);
 char toUpper(char chr);
 
+//#define TIME_OVERRIDES
+#define USER_TIME
+#define WOLFSSL_GMTIME
+#define USE_WOLF_SUSECONDS_T
+#define USE_WOLF_TIMEVAL_T
+#define USER_TICKS

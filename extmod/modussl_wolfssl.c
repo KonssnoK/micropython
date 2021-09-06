@@ -66,6 +66,18 @@ char toUpper(char chr)
 {
     return (chr >= 'a' && chr <= 'z') ? (chr - 32) : (chr);
 };
+extern uint64_t pyb_rtc_get_us_since_epoch();
+time_t XTIME(time_t* timer)
+{
+    time_t sec = 0;
+
+    sec = (time_t)(pyb_rtc_get_us_since_epoch() / 1000 / 1000);
+
+    if (timer != NULL)
+        *timer = sec;
+
+    return sec;
+}
 
 
 #ifdef MBEDTLS_DEBUG_C
