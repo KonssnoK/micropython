@@ -56,3 +56,4 @@ char toUpper(char chr);
 #define USE_WOLF_SUSECONDS_T
 #define USE_WOLF_TIMEVAL_T
 #define USER_TICKS
+#define RSA_LOW_MEM
