@@ -296,7 +296,7 @@ STATIC mp_obj_t usslcert_cert_selfsign(mp_obj_t cert, mp_obj_t private_key)
     } else {
         m_renew(byte, derCert, TWOK_BUF, derCertSz);
 
-        return mp_obj_new_bytearray_by_ref(derCertSz, derCert);
+        return mp_obj_new_bytes(derCert, derCertSz);
     }
 
     return mp_const_none;

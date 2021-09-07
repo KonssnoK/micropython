@@ -75,35 +75,8 @@ STATIC NORETURN void mbedtls_raise_error(int err) {
         mp_raise_OSError(-err);
     }
 
-    #if defined(MBEDTLS_ERROR_C)
-    // Including mbedtls_strerror takes about 1.5KB due to the error strings.
-    // MBEDTLS_ERROR_C is the define used by mbedtls to conditionally include mbedtls_strerror.
-    // It is set/unset in the MBEDTLS_CONFIG_FILE which is defined in the Makefile.
-
-    // Try to allocate memory for the message
-    #define ERR_STR_MAX 80  // mbedtls_strerror truncates if it doesn't fit
-    mp_obj_str_t *o_str = m_new_obj_maybe(mp_obj_str_t);
-    byte *o_str_buf = m_new_maybe(byte, ERR_STR_MAX);
-    if (o_str == NULL || o_str_buf == NULL) {
-        mp_raise_OSError(err);
-    }
-
-    // print the error message into the allocated buffer
-    mbedtls_strerror(err, (char *)o_str_buf, ERR_STR_MAX);
-    size_t len = strlen((char *)o_str_buf);
-
-    // Put the exception object together
-    o_str->base.type = &mp_type_str;
-    o_str->data = o_str_buf;
-    o_str->len = len;
-    o_str->hash = qstr_compute_hash(o_str->data, o_str->len);
-    // raise
-    mp_obj_t args[2] = { MP_OBJ_NEW_SMALL_INT(err), MP_OBJ_FROM_PTR(o_str)};
-    nlr_raise(mp_obj_exception_make_new(&mp_type_OSError, 2, 0, args));
-    #else
     // mbedtls is compiled without error strings so we simply return the err number
     mp_raise_OSError(err); // err is typically a large negative number
-    #endif
 }
 
 STATIC int _wolfssl_ssl_send(WOLFSSL* ssl, char* buf, int sz, void* ctx)
@@ -317,11 +290,11 @@ STATIC const mp_obj_type_t ussl_socket_type = {
 STATIC mp_obj_t mod_ssl_wrap_socket(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
     // TODO: Implement more args
     static const mp_arg_t allowed_args[] = {
-        { MP_QSTR_key, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_cert_reqs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_cert, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_ca_certs, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
-        { MP_QSTR_server_side, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
+        { MP_QSTR_key,          MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cert,         MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_cert_reqs,    MP_ARG_KW_ONLY | MP_ARG_INT, {.u_int = WOLFSSL_VERIFY_NONE} },
+        { MP_QSTR_ca_certs,     MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
+        { MP_QSTR_server_side,  MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = false} },
         { MP_QSTR_server_hostname, MP_ARG_KW_ONLY | MP_ARG_OBJ, {.u_rom_obj = MP_ROM_NONE} },
         { MP_QSTR_do_handshake, MP_ARG_KW_ONLY | MP_ARG_BOOL, {.u_bool = true} },
     };
