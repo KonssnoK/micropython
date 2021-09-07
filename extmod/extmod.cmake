@@ -49,6 +49,10 @@ set(MICROPY_SOURCE_EXTMOD
     ${MICROPY_EXTMOD_DIR}/nimble/modbluetooth_nimble.c
 )
 
+list(APPEND MICROPY_DEF_CORE
+    WOLFSSL_USER_SETTINGS
+)
+
 # Library for btree module and associated code
 
 set(MICROPY_LIB_BERKELEY_DIR "${MICROPY_DIR}/lib/berkeley-db-1.xx")
