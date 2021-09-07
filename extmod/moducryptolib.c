@@ -79,6 +79,12 @@ struct mbedtls_aes_ctx_with_key {
 #define AES_CTX_IMPL struct mbedtls_aes_ctx_with_key
 #endif
 
+#if MICROPY_SSL_WOLFSSL
+
+#error TODO
+
+#endif
+
 typedef struct _mp_obj_aes_t {
     mp_obj_base_t base;
     AES_CTX_IMPL ctx;
@@ -210,6 +216,12 @@ STATIC void aes_process_ctr_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *
 #endif
 
 #endif
+
+#if MICROPY_SSL_WOLFSSL
+
+#error TODO
+
+#endif // MICROPY_SSL_WOLFSSL
 
 STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *args) {
     mp_arg_check_num(n_args, n_kw, 2, 3, false);
