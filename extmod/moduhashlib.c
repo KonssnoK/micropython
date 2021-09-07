@@ -39,6 +39,8 @@
 
 #if MICROPY_SSL_MBEDTLS
 #include "mbedtls/sha256.h"
+#elif MICROPY_SSL_WOLFSSL
+#include "wolfssl/wolfcrypt/sha256.h"
 #else
 #include "lib/crypto-algorithms/sha256.h"
 #endif
@@ -57,9 +59,7 @@
 #endif
 
 #if MICROPY_SSL_WOLFSSL
-
-#error TODO
-
+#include "wolfssl/wolfcrypt/sha.h"
 #endif // MICROPY_SSL_WOLFSSL
 
 #endif
@@ -118,7 +118,42 @@ STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in) {
     mbedtls_sha256_finish_ret((mbedtls_sha256_context *)&self->state, (unsigned char *)vstr.buf);
     return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
 }
+#elif MICROPY_SSL_WOLFSSL
 
+STATIC mp_obj_t uhashlib_sha256_make_new(const mp_obj_type_t* type, size_t n_args, size_t n_kw, const mp_obj_t* args)
+{
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_hash_t* o = m_new_obj_var(mp_obj_hash_t, char, sizeof(wc_Sha256));
+    o->base.type = type;
+    o->final = false;
+    wc_InitSha256((wc_Sha256*)&o->state);
+
+    if (n_args == 1) {
+        uhashlib_sha256_update(MP_OBJ_FROM_PTR(o), args[0]);
+    }
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC mp_obj_t uhashlib_sha256_update(mp_obj_t self_in, mp_obj_t arg)
+{
+    mp_obj_hash_t* self = MP_OBJ_TO_PTR(self_in);
+    uhashlib_ensure_not_final(self);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+    wc_Sha256Update((wc_Sha256*)&self->state, bufinfo.buf, bufinfo.len);
+    return mp_const_none;
+}
+
+STATIC mp_obj_t uhashlib_sha256_digest(mp_obj_t self_in)
+{
+    mp_obj_hash_t* self = MP_OBJ_TO_PTR(self_in);
+    uhashlib_ensure_not_final(self);
+    self->final = true;
+    vstr_t vstr;
+    vstr_init_len(&vstr, 32);
+    wc_Sha256Final((wc_Sha256*)&self->state, (unsigned char*)vstr.buf);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
 #else
 
 #include "lib/crypto-algorithms/sha256.c"
@@ -253,7 +288,39 @@ STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in) {
 
 #if MICROPY_SSL_WOLFSSL
 
-#error TODO
+STATIC mp_obj_t uhashlib_sha1_make_new(const mp_obj_type_t* type, size_t n_args, size_t n_kw, const mp_obj_t* args)
+{
+    mp_arg_check_num(n_args, n_kw, 0, 1, false);
+    mp_obj_hash_t* o = m_new_obj_var(mp_obj_hash_t, char, sizeof(wc_Sha));
+    o->base.type = type;
+    o->final = false;
+    wc_InitSha((wc_Sha*)o->state);
+    if (n_args == 1) {
+        uhashlib_sha1_update(MP_OBJ_FROM_PTR(o), args[0]);
+    }
+    return MP_OBJ_FROM_PTR(o);
+}
+
+STATIC mp_obj_t uhashlib_sha1_update(mp_obj_t self_in, mp_obj_t arg)
+{
+    mp_obj_hash_t* self = MP_OBJ_TO_PTR(self_in);
+    uhashlib_ensure_not_final(self);
+    mp_buffer_info_t bufinfo;
+    mp_get_buffer_raise(arg, &bufinfo, MP_BUFFER_READ);
+    wc_ShaUpdate((wc_Sha*)self->state, bufinfo.buf, bufinfo.len);
+    return mp_const_none;
+}
+
+STATIC mp_obj_t uhashlib_sha1_digest(mp_obj_t self_in)
+{
+    mp_obj_hash_t* self = MP_OBJ_TO_PTR(self_in);
+    uhashlib_ensure_not_final(self);
+    self->final = true;
+    vstr_t vstr;
+    vstr_init_len(&vstr, WC_SHA_DIGEST_SIZE);
+    wc_ShaFinal((wc_Sha*)self->state, (byte*)vstr.buf);
+    return mp_obj_new_str_from_vstr(&mp_type_bytes, &vstr);
+}
 
 #endif // MICROPY_SSL_WOLFSSL
 
@@ -354,7 +421,7 @@ STATIC mp_obj_t uhashlib_md5_digest(mp_obj_t self_in) {
 
 #if MICROPY_SSL_WOLFSSL
 
-#error TODO
+#error TODO //Not required for ESP
 
 #endif // MICROPY_SSL_WOLFSSL
 

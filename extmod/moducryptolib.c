@@ -80,9 +80,20 @@ struct mbedtls_aes_ctx_with_key {
 #endif
 
 #if MICROPY_SSL_WOLFSSL
+#include "wolfssl/wolfcrypt/aes.h"
 
-#error TODO
-
+// Same story of mbedtls but we keep also iv
+struct wolfssl_aes_ctx_ext {
+    union {
+        Aes wolfssl_ctx;
+        struct {
+            uint8_t key[32];
+            uint8_t keysize;
+            uint8_t iv[16];
+        } init_data;
+    } u;
+};
+#define AES_CTX_IMPL struct wolfssl_aes_ctx_ext
 #endif
 
 typedef struct _mp_obj_aes_t {
@@ -218,8 +229,61 @@ STATIC void aes_process_ctr_impl(AES_CTX_IMPL *ctx, const uint8_t *in, uint8_t *
 #endif
 
 #if MICROPY_SSL_WOLFSSL
+STATIC void aes_initial_set_key_impl(AES_CTX_IMPL* ctx, const uint8_t* key, size_t keysize, const uint8_t iv[16])
+{
+    ctx->u.init_data.keysize = keysize;
+    memcpy(ctx->u.init_data.key, key, keysize);
 
-#error TODO
+    if (NULL != iv) {
+        memcpy(ctx->u.init_data.iv, iv, sizeof(ctx->u.init_data.iv));
+    }
+}
+
+STATIC void aes_final_set_key_impl(AES_CTX_IMPL* ctx, bool encrypt)
+{
+    // first, copy key aside
+    uint8_t key[32];
+    uint8_t keysize = ctx->u.init_data.keysize;
+    uint8_t iv[16];
+
+    memcpy(key, ctx->u.init_data.key, keysize);
+    memcpy(iv, ctx->u.init_data.iv, 16);
+
+    // setkey call will succeed, we've already checked the keysize earlier.
+    assert(16 == keysize || 32 == keysize);
+    if (encrypt) {
+        wc_AesSetKey(&ctx->u.wolfssl_ctx, key, keysize, iv, AES_ENCRYPTION);
+    } else {
+        wc_AesSetKey(&ctx->u.wolfssl_ctx, key, keysize, iv, AES_DECRYPTION);
+    }
+}
+
+STATIC void aes_process_ecb_impl(AES_CTX_IMPL* ctx, const uint8_t in[16], uint8_t out[16], bool encrypt)
+{
+#ifdef WOLFSSL_AES_DIRECT 
+    if (encrypt) {
+        wc_AesEncryptDirect(&ctx->u.wolfssl_ctx, out, in);
+    } else {
+        wc_AesDecryptDirect(&ctx->u.wolfssl_ctx, out, in);
+    }
+#endif
+}
+
+STATIC void aes_process_cbc_impl(AES_CTX_IMPL* ctx, const uint8_t* in, uint8_t* out, size_t in_len, bool encrypt)
+{
+    if (encrypt) {
+        wc_AesCbcEncrypt(&ctx->u.wolfssl_ctx, out, in, in_len);
+    } else {
+        wc_AesCbcDecrypt(&ctx->u.wolfssl_ctx, out, in, in_len);
+    }
+}
+
+#if MICROPY_PY_UCRYPTOLIB_CTR
+STATIC void aes_process_ctr_impl(AES_CTX_IMPL* ctx, const uint8_t* in, uint8_t* out, size_t in_len, struct ctr_params* ctr_params)
+{
+    wc_AesCtrEncrypt;
+}
+#endif
 
 #endif // MICROPY_SSL_WOLFSSL
 
@@ -229,7 +293,9 @@ STATIC mp_obj_t ucryptolib_aes_make_new(const mp_obj_type_t *type, size_t n_args
     const mp_int_t block_mode = mp_obj_get_int(args[1]);
 
     switch (block_mode) {
+#if !defined(MICROPY_SSL_WOLFSSL) || defined(WOLFSSL_AES_DIRECT)
         case UCRYPTOLIB_MODE_ECB:
+#endif
         case UCRYPTOLIB_MODE_CBC:
         #if MICROPY_PY_UCRYPTOLIB_CTR
         case UCRYPTOLIB_MODE_CTR:
