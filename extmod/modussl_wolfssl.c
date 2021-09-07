@@ -66,19 +66,6 @@ STATIC void mbedtls_debug(void *ctx, int level, const char *file, int line, cons
 }
 #endif
 
-STATIC NORETURN void mbedtls_raise_error(int err) {
-    // _mbedtls_ssl_send and _mbedtls_ssl_recv (below) turn positive error codes from the
-    // underlying socket into negative codes to pass them through mbedtls. Here we turn them
-    // positive again so they get interpreted as the OSError they really are. The
-    // cut-off of -256 is a bit hacky, sigh.
-    if (err < 0 && err > -256) {
-        mp_raise_OSError(-err);
-    }
-
-    // mbedtls is compiled without error strings so we simply return the err number
-    mp_raise_OSError(err); // err is typically a large negative number
-}
-
 STATIC int _wolfssl_ssl_send(WOLFSSL* ssl, char* buf, int sz, void* ctx)
 {
     mp_obj_t sock = *(mp_obj_t *)ctx;
@@ -334,7 +321,7 @@ STATIC mp_obj_t mod_ssl_connect(mp_obj_t ssl_obj)
         err = wolfSSL_get_error(o->ssl_sock, 0);
 
         wolfSSL_free(o->ssl_sock);
-        mbedtls_raise_error(err);
+        mp_raise_OSError(err);
     }
     return mp_const_none;
 }
