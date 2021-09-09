@@ -77,11 +77,19 @@ STATIC int _wolfssl_ssl_send(WOLFSSL* ssl, char* buf, int sz, void* ctx)
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(err)) {
             return WOLFSSL_CBIO_ERR_WANT_WRITE;
+        } else if (err == ECONNRESET) {
+            return WOLFSSL_CBIO_ERR_CONN_RST;
+        } else if (err == EINTR) {
+            return WOLFSSL_CBIO_ERR_ISR;
+        } else if (err == EPIPE) {
+            return WOLFSSL_CBIO_ERR_CONN_CLOSE;
+        } else {
+            printf("_wolfssl_ssl_send %d\n", err);
+            return WOLFSSL_CBIO_ERR_GENERAL;
         }
-        return -err; // convert an MP_ERRNO to something mbedtls passes through as error
-    } else {
-        return out_sz;
     }
+
+    return out_sz;
 }
 
 // _mbedtls_ssl_recv is called by mbedtls to receive bytes from the underlying socket
@@ -96,11 +104,19 @@ STATIC int _wolfssl_ssl_recv(WOLFSSL* ssl, char* buf, int sz, void* ctx)
     if (out_sz == MP_STREAM_ERROR) {
         if (mp_is_nonblocking_error(err)) {
             return WOLFSSL_CBIO_ERR_WANT_READ;
+        } else if (err == ECONNRESET) {
+            return WOLFSSL_CBIO_ERR_CONN_RST;
+        } else if (err == EINTR) {
+            return WOLFSSL_CBIO_ERR_ISR;
+        } else if (err == ECONNABORTED) {
+            return WOLFSSL_CBIO_ERR_CONN_CLOSE;
+        } else {
+            printf("_wolfssl_ssl_recv %d\n", err);
+            return WOLFSSL_CBIO_ERR_GENERAL;
         }
-        return -err;
-    } else {
-        return out_sz;
-    }
+    } 
+
+    return out_sz;
 }
 
 STATIC int ssl_verify_callback(int preverify, WOLFSSL_X509_STORE_CTX* store)
@@ -183,44 +199,50 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
 
 STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
-
+    int err;
     int ret = wolfSSL_read(o->ssl_sock, buf, size);
-    if (ret == WOLFSSL_ERROR_ZERO_RETURN) {
-        // end of stream
-        return 0;
+    
+    if (ret == WOLFSSL_FATAL_ERROR) {
+        err = wolfSSL_get_error(o->ssl_sock, 0);
+
+        if (err == WOLFSSL_ERROR_WANT_READ) {
+            err = MP_EWOULDBLOCK;
+        } else if (err == WOLFSSL_ERROR_WANT_WRITE) {
+            // If handshake is not finished, read attempt may end up in protocol
+            // wanting to write next handshake message. The same may happen with
+            // renegotation.
+            err = MP_EWOULDBLOCK;
+        }
+
+        *errcode = err;
+        return MP_STREAM_ERROR;
     }
-    if (ret >= 0) {
-        return ret;
-    }
-    if (ret == WOLFSSL_ERROR_WANT_READ) {
-        ret = MP_EWOULDBLOCK;
-    } else if (ret == WOLFSSL_ERROR_WANT_WRITE) {
-        // If handshake is not finished, read attempt may end up in protocol
-        // wanting to write next handshake message. The same may happen with
-        // renegotation.
-        ret = MP_EWOULDBLOCK;
-    }
-    *errcode = ret;
-    return MP_STREAM_ERROR;
+
+    return ret;
 }
 
 STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
-
+    int err;
     int ret = wolfSSL_write(o->ssl_sock, buf, size);
-    if (ret >= 0) {
-        return ret;
+
+    if (ret == WOLFSSL_FATAL_ERROR) {
+        err = wolfSSL_get_error(o->ssl_sock, 0);
+
+        if (err == WOLFSSL_ERROR_WANT_WRITE) {
+            err = MP_EWOULDBLOCK;
+        } else if (err == WOLFSSL_ERROR_WANT_READ) {
+            // If handshake is not finished, read attempt may end up in protocol
+            // wanting to write next handshake message. The same may happen with
+            // renegotation.
+            err = MP_EWOULDBLOCK;
+        }
+
+        *errcode = err;
+        return MP_STREAM_ERROR;
     }
-    if (ret == WOLFSSL_ERROR_WANT_WRITE) {
-        ret = MP_EWOULDBLOCK;
-    } else if (ret == WOLFSSL_ERROR_WANT_READ) {
-        // If handshake is not finished, write attempt may end up in protocol
-        // wanting to read next handshake message. The same may happen with
-        // renegotation.
-        ret = MP_EWOULDBLOCK;
-    }
-    *errcode = ret;
-    return MP_STREAM_ERROR;
+
+    return ret;
 }
 
 STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
