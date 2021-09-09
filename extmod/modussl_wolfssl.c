@@ -316,7 +316,7 @@ STATIC mp_obj_t mod_ssl_connect(mp_obj_t ssl_obj)
     // This function assigns a file descriptor (fd) as the input/output facility for the SSL connection.
     wolfSSL_set_fd(o->ssl_sock, (int)o->sock);
 
-    err = 0; /* reset error */
+    err = WOLFSSL_CBIO_ERR_WANT_READ; /* reset error */
     ret = wolfSSL_connect(o->ssl_sock);
 
     while (ret != WOLFSSL_SUCCESS && (err == WOLFSSL_CBIO_ERR_WANT_READ || err == WOLFSSL_CBIO_ERR_WANT_WRITE)) {
