@@ -185,16 +185,16 @@ STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errc
     mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
 
     int ret = wolfSSL_read(o->ssl_sock, buf, size);
-    if (ret == WOLFSSL_CBIO_ERR_CONN_CLOSE) {
+    if (ret == WOLFSSL_ERROR_ZERO_RETURN) {
         // end of stream
         return 0;
     }
     if (ret >= 0) {
         return ret;
     }
-    if (ret == WOLFSSL_CBIO_ERR_WANT_READ) {
+    if (ret == WOLFSSL_ERROR_WANT_READ) {
         ret = MP_EWOULDBLOCK;
-    } else if (ret == WOLFSSL_CBIO_ERR_WANT_WRITE) {
+    } else if (ret == WOLFSSL_ERROR_WANT_WRITE) {
         // If handshake is not finished, read attempt may end up in protocol
         // wanting to write next handshake message. The same may happen with
         // renegotation.
@@ -211,9 +211,9 @@ STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, in
     if (ret >= 0) {
         return ret;
     }
-    if (ret == WOLFSSL_CBIO_ERR_WANT_WRITE) {
+    if (ret == WOLFSSL_ERROR_WANT_WRITE) {
         ret = MP_EWOULDBLOCK;
-    } else if (ret == WOLFSSL_CBIO_ERR_WANT_READ) {
+    } else if (ret == WOLFSSL_ERROR_WANT_READ) {
         // If handshake is not finished, write attempt may end up in protocol
         // wanting to read next handshake message. The same may happen with
         // renegotation.
@@ -319,7 +319,7 @@ STATIC mp_obj_t mod_ssl_connect(mp_obj_t ssl_obj)
     do {
         ret = wolfSSL_connect(o->ssl_sock);
         err = wolfSSL_get_error(o->ssl_sock, 0);
-    } while (ret != WOLFSSL_SUCCESS && (err == WOLFSSL_CBIO_ERR_WANT_READ || err == WOLFSSL_CBIO_ERR_WANT_WRITE));
+    } while (ret != WOLFSSL_SUCCESS && (err == WOLFSSL_ERROR_WANT_READ || err == WOLFSSL_ERROR_WANT_WRITE));
 
     if (ret != WOLFSSL_SUCCESS) {
         wolfSSL_free(o->ssl_sock);
