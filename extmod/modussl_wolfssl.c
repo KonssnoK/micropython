@@ -75,6 +75,7 @@ STATIC int _wolfssl_ssl_send(WOLFSSL* ssl, char* buf, int sz, void* ctx)
 
     mp_uint_t out_sz = sock_stream->write(sock, buf, sz, &err);
     if (out_sz == MP_STREAM_ERROR) {
+        //printf("IOSEND %d %d\n", out_sz, err);
         if (mp_is_nonblocking_error(err)) {
             return WOLFSSL_CBIO_ERR_WANT_WRITE;
         } else if (err == ECONNRESET) {
@@ -92,7 +93,7 @@ STATIC int _wolfssl_ssl_send(WOLFSSL* ssl, char* buf, int sz, void* ctx)
     return out_sz;
 }
 
-// _mbedtls_ssl_recv is called by mbedtls to receive bytes from the underlying socket
+// _wolfssl_ssl_recv is called by wolfssl to receive bytes from the underlying socket
 STATIC int _wolfssl_ssl_recv(WOLFSSL* ssl, char* buf, int sz, void* ctx)
 {
     mp_obj_t sock = *(mp_obj_t *)ctx;
@@ -102,6 +103,7 @@ STATIC int _wolfssl_ssl_recv(WOLFSSL* ssl, char* buf, int sz, void* ctx)
 
     mp_uint_t out_sz = sock_stream->read(sock, buf, sz, &err);
     if (out_sz == MP_STREAM_ERROR) {
+        //printf("IORECV %d %d\n", out_sz, err);
         if (mp_is_nonblocking_error(err)) {
             return WOLFSSL_CBIO_ERR_WANT_READ;
         } else if (err == ECONNRESET) {
@@ -197,51 +199,51 @@ STATIC void socket_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     mp_printf(print, "<_SSLSocket %p>", self);
 }
 
-STATIC mp_uint_t socket_read(mp_obj_t o_in, void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
+STATIC mp_uint_t socket_read(mp_obj_t o_in, void* buf, mp_uint_t size, int* errcode)
+{
+    mp_obj_ssl_socket_t* o = MP_OBJ_TO_PTR(o_in);
     int err;
     int ret = wolfSSL_read(o->ssl_sock, buf, size);
-    
-    if (ret == WOLFSSL_FATAL_ERROR) {
-        ret = MP_STREAM_ERROR;
-        err = wolfSSL_get_error(o->ssl_sock, 0);
 
+    if (ret == WOLFSSL_FATAL_ERROR) {
+        err = wolfSSL_get_error(o->ssl_sock, 0);
+        //printf("RECV %d %d\n", ret, err);
         if (err == WOLFSSL_ERROR_WANT_READ) {
-            ret = MP_EWOULDBLOCK;
+            err = MP_EWOULDBLOCK;
         } else if (err == WOLFSSL_ERROR_WANT_WRITE) {
             // If handshake is not finished, read attempt may end up in protocol
             // wanting to write next handshake message. The same may happen with
             // renegotation.
-            ret = MP_EWOULDBLOCK;
+            err = MP_EWOULDBLOCK;
         }
 
         *errcode = err;
-        return ret;
+        return MP_STREAM_ERROR;
     }
 
     return ret;
 }
 
-STATIC mp_uint_t socket_write(mp_obj_t o_in, const void *buf, mp_uint_t size, int *errcode) {
-    mp_obj_ssl_socket_t *o = MP_OBJ_TO_PTR(o_in);
+STATIC mp_uint_t socket_write(mp_obj_t o_in, const void* buf, mp_uint_t size, int* errcode)
+{
+    mp_obj_ssl_socket_t* o = MP_OBJ_TO_PTR(o_in);
     int err;
     int ret = wolfSSL_write(o->ssl_sock, buf, size);
 
     if (ret == WOLFSSL_FATAL_ERROR) {
-        ret = MP_STREAM_ERROR;
         err = wolfSSL_get_error(o->ssl_sock, 0);
-
+        //printf("SEND %d %d\n", ret, err);
         if (err == WOLFSSL_ERROR_WANT_WRITE) {
-            ret = MP_EWOULDBLOCK;
+            err = MP_EWOULDBLOCK;
         } else if (err == WOLFSSL_ERROR_WANT_READ) {
             // If handshake is not finished, read attempt may end up in protocol
             // wanting to write next handshake message. The same may happen with
             // renegotation.
-            ret = MP_EWOULDBLOCK;
+            err = MP_EWOULDBLOCK;
         }
 
         *errcode = err;
-        return ret;
+        return MP_STREAM_ERROR;
     }
 
     return ret;
