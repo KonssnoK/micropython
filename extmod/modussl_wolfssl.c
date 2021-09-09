@@ -229,6 +229,10 @@ STATIC mp_obj_t socket_setblocking(mp_obj_t self_in, mp_obj_t flag_in) {
     mp_obj_t dest[3];
     mp_load_method(sock, MP_QSTR_setblocking, dest);
     dest[2] = flag_in;
+
+    // Set blocking socket
+    //wolfSSL_set_using_nonblock(sock, mp_obj_get_int(flag_in));
+
     return mp_call_method_n_kw(1, 0, dest);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(socket_setblocking_obj, socket_setblocking);
@@ -305,9 +309,6 @@ STATIC mp_obj_t mod_ssl_connect(mp_obj_t ssl_obj)
 
     o->ssl_sock = wolfSSL_new(o->ssl_ctx);
 
-    // Set blocking socket
-    //wolfSSL_set_using_nonblock(o->ssl_sock, 0);
-
     // This function registers a context for the SSL session's receive callback function.
     wolfSSL_SetIOReadCtx(o->ssl_sock, o->ssl_ctx);
     wolfSSL_SetIOWriteCtx(o->ssl_sock, o->ssl_ctx);
@@ -317,12 +318,17 @@ STATIC mp_obj_t mod_ssl_connect(mp_obj_t ssl_obj)
 
     err = 0; /* reset error */
     ret = wolfSSL_connect(o->ssl_sock);
-    if (ret != WOLFSSL_SUCCESS) {
-        err = wolfSSL_get_error(o->ssl_sock, 0);
 
+    while (ret != WOLFSSL_SUCCESS && (err == WOLFSSL_CBIO_ERR_WANT_READ || err == WOLFSSL_CBIO_ERR_WANT_WRITE)) {
+        // We didn't connect yet
+        err = wolfSSL_get_error(o->ssl_sock, 0);
+    }
+
+    if (ret != WOLFSSL_SUCCESS) {
         wolfSSL_free(o->ssl_sock);
         mp_raise_OSError(err);
     }
+
     return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_ssl_connect_obj, mod_ssl_connect);
